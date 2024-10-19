@@ -25,7 +25,15 @@ namespace ECS
             
             foreach (var (movementComp,transformComp) in SystemAPI.Query<RefRW<MovementComponent>,RefRW<LocalTransform>>().WithAll<ControlEntityTag>())
             {
+<<<<<<< Updated upstream
                 if (movementComp.ValueRO.vector.x > 1)
+=======
+                var movementComp = SystemAPI.GetComponent<MovementComponent>(e);
+                var transformComp = SystemAPI.GetComponent<LocalTransform>(e);
+
+                var speedMultiplier = Time.deltaTime * movementComp.speed;
+                if (movementComp.vector.y > 0)
+>>>>>>> Stashed changes
                 {
                     movementComp.ValueRW.vector.x = 1;
                 }
