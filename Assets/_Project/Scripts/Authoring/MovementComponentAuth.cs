@@ -3,14 +3,14 @@ using UnityEngine;
 
 namespace ECS
 {
-    public class MovementAuth : MonoBehaviour
+    public class MovementComponentAuth : MonoBehaviour
     {
         [SerializeField] Vector3 derection;
         [SerializeField] float moveSpeed;
 
-        class MovementAuthBaker : Baker<MovementAuth>
+        class MovementAuthBaker : Baker<MovementComponentAuth>
         {
-            public override void Bake(MovementAuth authoring)
+            public override void Bake(MovementComponentAuth authoring)
             {
                 Entity entity = GetEntity(TransformUsageFlags.Dynamic);
 

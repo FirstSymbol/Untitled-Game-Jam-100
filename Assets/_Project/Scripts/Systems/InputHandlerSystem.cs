@@ -17,8 +17,7 @@ namespace ECS
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var inputQuery = state.GetEntityQuery(ComponentType.ReadOnly<InputComponent>());
-            var inputComponent = inputQuery.GetSingleton<InputComponent>();
+            if (!SystemAPI.TryGetSingleton<InputComponent>(out InputComponent inputComponent))return;
 
             foreach (var movementComponent in SystemAPI.Query<RefRW<MovementComponent>>())
             {
