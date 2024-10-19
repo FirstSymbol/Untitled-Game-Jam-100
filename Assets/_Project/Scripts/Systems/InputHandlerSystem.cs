@@ -7,63 +7,56 @@ using UnityEngine.SceneManagement;
 
 namespace ECS
 {
+    [UpdateAfter(typeof(InputSystem))]
+    [CreateAfter(typeof(InputSystem))]
     public partial struct InputHandlerSystem : ISystem
     {
-        private EntityQuery inputQuery;
-        EntityQuery movementQuery;
-        public void OnCreate(ref SystemState state)
-        {
-            inputQuery = state.GetEntityQuery(ComponentType.ReadOnly<InputComponent>());
-            movementQuery = state.GetEntityQuery(ComponentType.ReadWrite<MovementComponent>());
-        }
-        
+        //public void OnCreate(ref SystemState state)
+        //{
+        //}
+        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var entity = inputQuery.GetSingletonEntity();
-            var inputComponent = SystemAPI.GetComponent<InputComponent>(entity);
+            if (!SystemAPI.TryGetSingleton<InputComponent>(out InputComponent inputComponent))return;
 
-            foreach (var e in movementQuery.ToEntityArray(Allocator.Temp))
+            foreach (var movementComponent in SystemAPI.Query<RefRW<MovementComponent>>())
             {
-                var movementComponent = SystemAPI.GetComponent<MovementComponent>(e);
-                
                 switch (inputComponent.keyDown)
                 {
                     case (int)KeyCode.W:
-                        movementComponent.vector += new float3(0,1,0);
+                            movementComponent.ValueRW.vector.y += 1;
                         break;
                     case (int)KeyCode.A:
-                        movementComponent.vector += new float3(-1,0,0);
+                            movementComponent.ValueRW.vector.x -= 1f;
                         break;
                     case (int)KeyCode.S:
-                        movementComponent.vector += new float3(0,-1,0);
+                            movementComponent.ValueRW.vector.y -= 1f;
                         break;
                     case (int)KeyCode.D:
-                        movementComponent.vector += new float3(1,0,0);
+                            movementComponent.ValueRW.vector.x += 1f;
                         break;
                 }
                 switch (inputComponent.keyUp)
                 {
                     case (int)KeyCode.W:
-                        movementComponent.vector += new float3(0,-1,0);
+                            movementComponent.ValueRW.vector.y -= 1f;
                         break;
                     case (int)KeyCode.A:
-                        movementComponent.vector += new float3(1,0,0);
+                            movementComponent.ValueRW.vector.x += 1f;
                         break;
                     case (int)KeyCode.S:
-                        movementComponent.vector += new float3(0,1,0);
+                            movementComponent.ValueRW.vector.y += 1f;
                         break;
                     case (int)KeyCode.D:
-                        movementComponent.vector += new float3(-1,0,0);
+                            movementComponent.ValueRW.vector.x -= 1f;
                         break;
                 }
-                
-                state.EntityManager.SetComponentData(e, movementComponent);
             }
         }
         
-        public void OnDestroy(ref SystemState state)
-        {
-
-        }
+        //public void OnDestroy(ref SystemState state)
+        //{
+        //    state.Enabled = false;
+        //}
     }
 }

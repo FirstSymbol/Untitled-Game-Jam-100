@@ -10,7 +10,6 @@ namespace ECS
     
     public partial struct InputSystem : ISystem
     {
-        private EntityQuery _entityQuery;
         private NativeArray<int> keys;
         
         
@@ -21,36 +20,32 @@ namespace ECS
             keys[1] = (int)KeyCode.A;
             keys[2] = (int)KeyCode.S;
             keys[3] = (int)KeyCode.D;
-            
-            _entityQuery = state.GetEntityQuery(ComponentType.ReadWrite<InputComponent>());
         }
 
-        
+        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             
-            foreach (var entity in _entityQuery.ToEntityArray(Allocator.Temp))
+            foreach (var inputComponent in SystemAPI.Query<RefRW<InputComponent>>())
             {
-                var inputcomponent = SystemAPI.GetComponent<InputComponent>(entity);
-                inputcomponent.keyUp = (int)KeyCode.None;
-                inputcomponent.keyDown = (int)KeyCode.None;
-                inputcomponent.keyPressed = (int)KeyCode.None;
+                inputComponent.ValueRW.keyUp = (int)KeyCode.None;
+                inputComponent.ValueRW.keyDown = (int)KeyCode.None;
+                inputComponent.ValueRW.keyPressed = (int)KeyCode.None;
                 foreach (var k in keys)
                 {
                     if (Input.GetKeyDown((KeyCode) k))
                     {
-                        inputcomponent.keyDown = k;
+                        inputComponent.ValueRW.keyDown = k;
                     }
                     if (Input.GetKeyUp((KeyCode) k))
                     {
-                        inputcomponent.keyUp = k;
+                        inputComponent.ValueRW.keyUp = k;
                     }
 
                     if (Input.GetKey((KeyCode)k))
                     {
-                        inputcomponent.keyPressed = k;
+                        inputComponent.ValueRW.keyPressed = k;
                     }
-                    state.EntityManager.SetComponentData(entity,inputcomponent);
                 }
                 
             }

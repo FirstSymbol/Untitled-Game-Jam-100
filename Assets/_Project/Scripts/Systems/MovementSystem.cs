@@ -8,55 +8,52 @@ using UnityEngine;
 
 namespace ECS
 {
-    [UpdateAfter(typeof(InputSystem))]
-    [CreateAfter(typeof(InputSystem))]
+    [UpdateAfter(typeof(InputHandlerSystem))]
+    [CreateAfter(typeof(InputHandlerSystem))]
     public partial struct MovementSystem : ISystem
     {
-        private EntityQuery _entityQuery;
-
         public void OnCreate(ref SystemState state)
         {
             state.RequireForUpdate<InputComponent>();
-            _entityQuery = state.GetEntityQuery(
-                ComponentType.ReadWrite<MovementComponent>(),
-                ComponentType.ReadWrite<LocalTransform>(),
-                ComponentType.ReadOnly<ControlEntityComponent>()
-            );
         }
-
+        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             var inputEntity = SystemAPI.GetSingletonEntity<InputComponent>();
             var inputcomp = SystemAPI.GetComponent<InputComponent>(inputEntity);
             
-            foreach (var e in _entityQuery.ToEntityArray(Allocator.Temp))
+            foreach (var (movementComp,transformComp) in SystemAPI.Query<RefRW<MovementComponent>,RefRW<LocalTransform>>().WithAll<ControlEntityTag>())
             {
-                var movementComp = SystemAPI.GetComponent<MovementComponent>(e);
-                var transformComp = SystemAPI.GetComponent<LocalTransform>(e);
 
-                var speedMultiplier = Time.deltaTime * movementComp.speed;
-                Debug.Log(speedMultiplier);
+                var speedMultiplier = Time.deltaTime * movementComp.ValueRO.speed;
                 
-                if (movementComp.vector.y > 0)
+                speedMultiplier = Time.deltaTime * movementComp.ValueRO.speed;
+                
+                if (movementComp.ValueRO.vector.y > 0)
                 {
-                    transformComp.Position += new float3(0, 1 * speedMultiplier, 0);
+                    transformComp.ValueRW.Position += new float3(0, 1 * speedMultiplier, 0);
                 }
-                else if (movementComp.vector.y < 0)
+                else if (movementComp.ValueRO.vector.y < 0)
                 {
-                    transformComp.Position -= new float3(0, 1 * speedMultiplier, 0);
+                    transformComp.ValueRW.Position -= new float3(0, 1 * speedMultiplier, 0);
+                }
+                else
+                {
+                    transformComp.ValueRW.Position -= new float3(0, 0, 0);
                 }
 
-                if (movementComp.vector.x > 0)
+                if (movementComp.ValueRO.vector.x > 0)
                 {
-                    transformComp.Position += new float3(1 * speedMultiplier, 0, 0);
+                    transformComp.ValueRW.Position += new float3(1 * speedMultiplier, 0, 0);
                 }
-                else if (movementComp.vector.x < 0)
+                else if (movementComp.ValueRO.vector.x < 0)
                 {
-                    transformComp.Position -= new float3(1 * speedMultiplier, 0, 0);
+                    transformComp.ValueRW.Position -= new float3(1 * speedMultiplier, 0, 0);
                 }
-                
-                state.EntityManager.SetComponentData(e, transformComp);
-                
+                else
+                {
+                    transformComp.ValueRW.Position -= new float3(0, 0, 0);
+                }
             }
         }
         

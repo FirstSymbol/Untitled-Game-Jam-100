@@ -2,7 +2,7 @@
 
 namespace ECS
 {
-    public struct ControlEntityComponent : IComponentData
+    public struct ControlEntityTag : IComponentData
     {
         
     }
